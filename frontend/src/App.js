@@ -108,10 +108,11 @@ function TransactionCard({ transaction, onCategoryChange, onDelete }) {
           <div className="card-details">
             <p className="card-description">{transaction.description}</p>
             <p className="card-date">
-              {new Date(transaction.date).toLocaleString("en-IN", {
-                day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-              })}
-            </p>
+  {new Date(transaction.date).toLocaleString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", second: "2-digit"
+  })}
+</p>
           </div>
         </div>
         <div className="card-right">
