@@ -54,7 +54,6 @@ body {
 }
 
 .auth-tab.active { background: #3b82f6; color: white; }
-
 .auth-form { display: flex; flex-direction: column; gap: 14px; }
 .input-group { display: flex; flex-direction: column; gap: 6px; }
 .input-group label { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
@@ -167,12 +166,49 @@ body {
 .balance-value.income { color: #22c55e; }
 .balance-value.expense { color: #f87171; }
 
+.pie-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pie-svg {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-cat { color: #94a3b8; flex: 1; }
+.legend-pct { color: #64748b; font-size: 0.75rem; }
+.legend-val { color: #e2e8f0; font-weight: 600; min-width: 70px; text-align: right; }
+
 .category-tracks { display: flex; flex-direction: column; gap: 14px; }
 .category-track { display: flex; flex-direction: column; gap: 6px; }
-
 .track-label { display: flex; justify-content: space-between; font-size: 0.84rem; color: #94a3b8; }
 .track-amount { font-weight: 600; color: #e2e8f0; }
-
 .track-bar-bg { height: 8px; background: #0f172a; border-radius: 99px; overflow: hidden; }
 
 .track-bar-fill {
@@ -246,6 +282,34 @@ body {
 .add-btn:disabled { background: #475569; cursor: not-allowed; }
 
 .hint { font-size: 0.76rem; color: #475569; }
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  min-width: 140px;
+  flex: 1;
+}
+
+.clear-btn {
+  background: #334155;
+  color: #94a3b8;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover { background: #ef4444; color: white; }
 
 .transaction-feed { display: flex; flex-direction: column; gap: 10px; }
 

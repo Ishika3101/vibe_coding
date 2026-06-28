@@ -85,6 +85,57 @@ function AuthScreen({ onLogin }) {
   );
 }
 
+function PieChart({ categoryTotals }) {
+  const total = Object.values(categoryTotals).reduce((a, b) => a + b, 0);
+  if (total === 0) return null;
+
+  let cumulativePercent = 0;
+  const slices = Object.entries(categoryTotals).map(([cat, value]) => {
+    const percent = value / total;
+    const start = cumulativePercent;
+    cumulativePercent += percent;
+    return { cat, value, percent, start };
+  });
+
+  function getCoords(percent) {
+    const angle = percent * 2 * Math.PI - Math.PI / 2;
+    return { x: 50 + 40 * Math.cos(angle), y: 50 + 40 * Math.sin(angle) };
+  }
+
+  return (
+    <div className="pie-wrapper">
+      <svg viewBox="0 0 100 100" className="pie-svg">
+        {slices.map(({ cat, percent, start }) => {
+          if (percent === 0) return null;
+          const s = getCoords(start);
+          const e = getCoords(start + percent);
+          const large = percent > 0.5 ? 1 : 0;
+          return (
+            <path key={cat}
+              d={`M50,50 L${s.x},${s.y} A40,40 0 ${large},1 ${e.x},${e.y} Z`}
+              fill={CATEGORY_COLORS[cat]} opacity="0.85" />
+          );
+        })}
+        <circle cx="50" cy="50" r="22" fill="#0f172a" />
+        <text x="50" y="47" textAnchor="middle" fill="#94a3b8" fontSize="6">Total</text>
+        <text x="50" y="56" textAnchor="middle" fill="#f1f5f9" fontSize="7" fontWeight="bold">
+          ₹{total.toLocaleString()}
+        </text>
+      </svg>
+      <div className="pie-legend">
+        {slices.map(({ cat, value, percent }) => (
+          <div key={cat} className="legend-item">
+            <span className="legend-dot" style={{ backgroundColor: CATEGORY_COLORS[cat] }} />
+            <span className="legend-cat">{CATEGORY_ICONS[cat]} {cat}</span>
+            <span className="legend-pct">{Math.round(percent * 100)}%</span>
+            <span className="legend-val">₹{value.toLocaleString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AnalyticsBlock({ summary }) {
   const { categoryTotals, totalIncome, totalExpense } = summary;
   const maxValue = Math.max(...Object.values(categoryTotals), 1);
@@ -109,6 +160,9 @@ function AnalyticsBlock({ summary }) {
           </span>
         </div>
       </div>
+
+      <PieChart categoryTotals={categoryTotals} />
+
       <div className="category-tracks">
         {Object.entries(categoryTotals).map(([cat, total]) => (
           <div key={cat} className="category-track">
@@ -231,6 +285,16 @@ export default function App() {
     totalIncome: 0, totalExpense: 0,
   });
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filterCat, setFilterCat] = useState("");
+  const [filterType, setFilterType] = useState("");
+
+  const filtered = transactions.filter((tx) => {
+    const matchSearch = tx.description.toLowerCase().includes(search.toLowerCase());
+    const matchCat = filterCat ? tx.category === filterCat : true;
+    const matchType = filterType === "credit" ? tx.amount > 0 : filterType === "debit" ? tx.amount < 0 : true;
+    return matchSearch && matchCat && matchType;
+  });
 
   useEffect(() => { if (token) loadData(); }, [token]);
 
@@ -289,20 +353,40 @@ export default function App() {
       <main className="app-main">
         {error && <div className="error-banner">⚠️ {error}</div>}
         <AnalyticsBlock summary={summary} />
+
         <section className="section">
           <h2 className="section-title">Add New Transaction</h2>
           <AddTransactionForm onAdd={handleAdd} />
           <p className="hint">💡 Try "Zomato", "Uber", "Swiggy", "Cashback" — they auto-categorize!</p>
         </section>
+
         <section className="section">
           <h2 className="section-title">
-            Transaction Feed <span className="tx-count">{transactions.length} transactions</span>
+            Transaction Feed <span className="tx-count">{filtered.length} transactions</span>
           </h2>
+          <div className="filter-bar">
+            <input type="text" placeholder="🔍 Search transactions..."
+              value={search} onChange={(e) => setSearch(e.target.value)} className="form-input" />
+            <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="category-dropdown filter-select">
+              <option value="">All Categories</option>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="category-dropdown filter-select">
+              <option value="">All Types</option>
+              <option value="credit">Credit Only</option>
+              <option value="debit">Debit Only</option>
+            </select>
+            {(search || filterCat || filterType) && (
+              <button className="clear-btn" onClick={() => { setSearch(""); setFilterCat(""); setFilterType(""); }}>
+                ✕ Clear
+              </button>
+            )}
+          </div>
           <div className="transaction-feed">
-            {transactions.length === 0 ? (
-              <div className="empty-state">No transactions yet. Add one above!</div>
+            {filtered.length === 0 ? (
+              <div className="empty-state">No transactions match your filter.</div>
             ) : (
-              transactions.map((tx) => (
+              filtered.map((tx) => (
                 <TransactionCard key={tx.id} transaction={tx}
                   onCategoryChange={handleCategoryChange} onDelete={handleDelete} />
               ))
